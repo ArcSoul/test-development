@@ -1,0 +1,64 @@
+plugins {
+    id 'org.springframework.boot' version '2.6.0'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id 'war'
+    id 'jacoco'
+}
+
+group = 'com.cleverit'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+targetCompatibility = '11'
+
+configurations {
+    all*.exclude module: 'spring-boot-starter-logging'
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    springVersion = "2.6.0"
+    lombokVersion = "1.18.22"
+    h2Version = "1.4.200"
+    prometheusVersion = "1.8.0"
+}
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter-actuator:$springVersion"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springVersion"
+    implementation "org.springframework.boot:spring-boot-starter-validation:$springVersion"
+    implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
+    implementation "org.springframework.boot:spring-boot-starter-log4j2:$springVersion"
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    developmentOnly "org.springframework.boot:spring-boot-devtools:$springVersion"
+    runtimeOnly "com.h2database:h2:$h2Version"
+    runtimeOnly "io.micrometer:micrometer-registry-prometheus:$prometheusVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    providedRuntime "org.springframework.boot:spring-boot-starter-tomcat:$springVersion"
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springVersion"
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport{
+    dependsOn test
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.enabled true
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: 'com/cleverit/testdevelop/models/**')
+        }))
+    }
+}
